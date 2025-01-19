@@ -23,9 +23,6 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            top: 0;
             background: #ffffff;
             z-index: 100;
         }
@@ -66,37 +63,26 @@
             background: #ffffff;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            overflow: hidden;
+            padding: 10px;
             z-index: 200;
-        }
-
-        .dropdown a {
-            display: flex;
-            align-items: center;
-            padding: 10px 20px;
-            text-decoration: none;
-            color: #000;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
 
-        .dropdown a img {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
+        .dropdown .app-item {
+            text-align: center;
         }
 
-        .dropdown a:hover {
-            background-color: #f1f1f1;
-        }
-
-        @media (max-width: 768px) {
-            .apps-icon {
-                display: none;
-            }
+        .dropdown img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 5px;
         }
 
         .logo {
-            margin: 100px 0 30px 0;
+            margin-top: 100px;
+            margin-bottom: 30px;
         }
 
         .search-container {
@@ -149,7 +135,6 @@
             padding: 10px 20px;
             text-decoration: none;
             color: #000;
-            transition: background-color 0.2s;
             gap: 10px;
         }
 
@@ -173,15 +158,9 @@
         <div class="menu-right">
             <a href="https://mail.knovon.org">Mail Box</a>
             <div class="apps-icon" onclick="toggleDropdown()">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
+                <div></div><div></div><div></div>
+                <div></div><div></div><div></div>
+                <div></div><div></div><div></div>
             </div>
             <div class="dropdown" id="dropdown"></div>
         </div>
@@ -215,13 +194,14 @@
             const dropdown = document.getElementById('dropdown');
             dropdown.innerHTML = '';
             sites.forEach(site => {
-                const link = document.createElement('a');
-                link.href = site.url;
-                link.innerHTML = `
-                    <img src="${site.logo || 'https://via.placeholder.com/24'}" alt="${site.title}">
-                    ${site.title}
+                const appItem = document.createElement('div');
+                appItem.className = 'app-item';
+                appItem.innerHTML = `
+                    <img src="${site.logo || 'https://via.placeholder.com/40'}" alt="${site.title}">
+                    <span>${site.title}</span>
                 `;
-                dropdown.appendChild(link);
+                appItem.onclick = () => window.location.href = site.url;
+                dropdown.appendChild(appItem);
             });
         }
 
@@ -250,22 +230,19 @@
 
         function updateGreeting() {
             const now = new Date();
-            const hours = now.getHours
             const hours = now.getHours();
             const searchInput = document.getElementById('searchInput');
             let greeting = "Good Morning!";
-
             if (hours >= 12 && hours < 18) {
                 greeting = "Good Afternoon!";
             } else if (hours >= 18) {
                 greeting = "Good Evening!";
             }
-
             searchInput.placeholder = greeting;
         }
 
         function handleEnter(event) {
-            if (event.key === 'Enter') {
+            if (event.key ==='Enter') {
                 const query = document.getElementById('searchInput').value;
                 if (query.trim() === '') return;
                 window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
@@ -274,11 +251,7 @@
 
         function toggleDropdown() {
             const dropdown = document.getElementById('dropdown');
-            if (dropdown.style.display === 'block') {
-                dropdown.style.display = 'none';
-            } else {
-                dropdown.style.display = 'block';
-            }
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
 
         document.addEventListener('click', (e) => {
