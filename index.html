@@ -13,147 +13,99 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
             height: 100vh;
-            background: linear-gradient(to bottom, #0078d7, #ffffff);
-            color: #ffffff;
+            background: #ffffff;
+            color: #000000;
         }
 
-        .container {
-            max-width: 800px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 15px;
+        .logo {
+            margin-bottom: 30px;
         }
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .date {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
         }
 
         .search-bar {
-            display: flex;
-            margin-bottom: 1.5rem;
+            position: relative;
+            width: 100%;
         }
 
         .search-bar input {
-            flex: 1;
-            padding: 10px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 5px 0 0 5px;
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
-        .search-bar button {
-            padding: 10px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 0 5px 5px 0;
-            background: #0078d7;
-            color: white;
-            cursor: pointer;
+        .search-bar input:focus {
+            border-color: #0078d7;
         }
 
-        .search-bar button:hover {
-            background: #005bb5;
-        }
-
-        .links {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .link-card {
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
             background: white;
-            color: black;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
         }
 
-        .link-card:hover {
-            transform: scale(1.05);
+        .suggestions.active {
+            display: block;
         }
 
-        .footer {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.8);
+        .suggestions a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #000;
+            transition: background-color 0.2s;
+        }
+
+        .suggestions a:hover {
+            background-color: #f1f1f1;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 id="greeting">Good Morning</h1>
-        <div class="date" id="date"></div>
-
+    <div class="search-container">
+        <img src="https://mytab.knovon.net/knovontablogo.png" alt="KnovonTab Logo" class="logo" width="200">
         <div class="search-bar">
-            <input type="text" placeholder="Search Google or type a URL">
-            <button onclick="searchGoogle()">Search</button>
+            <input id="searchInput" type="text" placeholder="Good Morning! What would you like to explore?" oninput="showSuggestions()">
+            <div class="suggestions" id="suggestions">
+                <a href="https://google.com">Google</a>
+                <a href="https://knovon.org">Knovon</a>
+                <a href="https://mail.google.com">Gmail</a>
+                <a href="https://roblox.com">Roblox</a>
+            </div>
         </div>
-
-        <div class="links">
-            <a href="https://google.com" class="link-card">Google</a>
-            <a href="https://knovon.org" class="link-card">Knovon</a>
-            <a href="https://mail.google.com" class="link-card">Gmail</a>
-            <a href="https://roblox.com" class="link-card">Roblox</a>
-        </div>
-    </div>
-
-    <div class="footer">
-        Powered by Knovon
     </div>
 
     <script>
-        function updateGreeting() {
-            const greetingElement = document.getElementById('greeting');
-            const dateElement = document.getElementById('date');
-
-            const now = new Date();
-            const hours = now.getHours();
-            const dateString = now.toLocaleDateString(undefined, {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-
-            dateElement.textContent = dateString;
-
-            let greeting = "Good Morning";
-            if (hours >= 12 && hours < 18) {
-                greeting = "Good Afternoon";
-            } else if (hours >= 18) {
-                greeting = "Good Evening";
-            }
-
-            // Custom holiday greeting
-            const month = now.getMonth() + 1;
-            const day = now.getDate();
-            if (month === 7 && day === 4) {
-                greeting = "Happy 4th of July";
-            }
-
-            greetingElement.textContent = greeting;
-        }
-
-        function searchGoogle() {
-            const query = document.querySelector('.search-bar input').value;
-            if (query) {
-                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        function showSuggestions() {
+            const input = document.getElementById('searchInput').value;
+            const suggestions = document.getElementById('suggestions');
+            if (input.trim() === '') {
+                suggestions.classList.remove('active');
+            } else {
+                suggestions.classList.add('active');
             }
         }
 
-        updateGreeting();
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-bar')) {
+                document.getElementById('suggestions').classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
