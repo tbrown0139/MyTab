@@ -118,6 +118,7 @@
             filteredSites.forEach(site => {
                 const suggestion = document.createElement('a');
                 suggestion.href = site.url;
+                suggestion.target = "_blank"; // Open in a new tab
                 suggestion.innerHTML = `
                     <img src="${site.logo || 'https://via.placeholder.com/24'}" alt="${site.title}">
                     ${site.title}
@@ -142,12 +143,19 @@
             searchInput.placeholder = greeting;
         }
 
-        // Perform Google search when Enter is pressed
+        // Handle search behavior
         function handleEnter(event) {
             if (event.key === 'Enter') {
-                const query = document.getElementById('searchInput').value;
-                if (query.trim() === '') return;
-                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                const query = document.getElementById('searchInput').value.trim();
+
+                // Check if it's a valid domain
+                const domainPattern = /^[a-z0-9.-]+\.[a-z]{2,}$/i;
+                if (domainPattern.test(query)) {
+                    window.location.href = query.startsWith('http') ? query : `https://${query}`;
+                } else {
+                    // Perform Google search
+                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                }
             }
         }
     </script>
