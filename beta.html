@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KnovonTab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 2s ease-in-out;
+            color: #000000;
+        }
+
+        .logo {
+            margin-top: 100px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            z-index: 5;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .search-bar input:focus {
+            border-color: #0078d7;
+            box-shadow: 0 4px 20px rgba(0, 120, 215, 0.5);
+        }
+
+        #status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.8);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .logo {
+                width: 150px;
+                margin-top: 50px;
+            }
+
+            .search-bar input {
+                font-size: 1rem;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <img src="https://mytab.knovon.net/knovontablogo.png" alt="KnovonTab Logo" class="logo" width="200">
+        <div class="search-bar">
+            <input id="searchInput" type="text" placeholder="Start typing...">
+        </div>
+    </div>
+    <div id="status"></div>
+
+    <script>
+        const prompts = [
+            { text: "What's the weather in Salt Lake City Utah?", image: "url('https://images.unsplash.com/photo-1603939540289-922b5886c597?q=80&w=3850&auto=format&fit=crop')" },
+            { text: "How far is Vegas from Phoenix Arizona?", image: "url('https://images.unsplash.com/photo-1589046212139-bf293b6eba18?q=80&w=3870&auto=format&fit=crop')" },
+            { text: "How big is the Grand Canyon?", image: "url('https://images.unsplash.com/photo-1555997157-5c8da70533b0?q=80&w=3870&auto=format&fit=crop')" },
+            { text: "How big is Lake Powell in Utah?", image: "url('https://images.unsplash.com/photo-1575408264798-b50b252663e6?q=80&w=3906&auto=format&fit=crop')" },
+            { text: "How many buildings are in New York City?", image: "url('https://images.unsplash.com/photo-1486607303850-bc051a4ffad4?q=80&w=3874&auto=format&fit=crop')" }
+        ];
+
+        let currentPromptIndex = 0;
+        const searchInput = document.getElementById('searchInput');
+        const statusElement = document.getElementById('status');
+
+        function typeText(text, callback) {
+            let index = 0;
+            const interval = setInterval(() => {
+                searchInput.placeholder = text.slice(0, index + 1);
+                index++;
+                if (index === text.length) {
+                    clearInterval(interval);
+                    setTimeout(callback, 2000);
+                }
+            }, 100);
+        }
+
+        function deleteText(callback) {
+            const interval = setInterval(() => {
+                searchInput.placeholder = searchInput.placeholder.slice(0, -1);
+                if (searchInput.placeholder.length === 0) {
+                    clearInterval(interval);
+                    callback();
+                }
+            }, 50);
+        }
+
+        function cyclePrompts() {
+            const { text, image } = prompts[currentPromptIndex];
+            document.body.style.backgroundImage = image;
+
+            if (document.activeElement !== searchInput) {
+                typeText(text, () => {
+                    deleteText(() => {
+                        currentPromptIndex = (currentPromptIndex + 1) % prompts.length;
+                        cyclePrompts();
+                    });
+                });
+            }
+        }
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query === "") {
+                    alert("Please enter a query before pressing Enter.");
+                    return;
+                }
+
+                try {
+                    new URL(query.startsWith('http') ? query : `https://${query}`);
+                    window.location.href = query.startsWith('http') ? query : `https://${query}`;
+                } catch {
+                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                statusElement.style.display = 'none';
+            } else {
+                statusElement.textContent = 'You are offline. Some features may not work.';
+                statusElement.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+                statusElement.style.display = 'block';
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initialize the page
+        updateOnlineStatus();
+        cyclePrompts();
+    </script>
+</body>
+</html>
