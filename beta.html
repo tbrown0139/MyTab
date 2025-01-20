@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KnovonTab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .logo {
+            margin-top: 100px;
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-bar input:focus {
+            border-color: #0078d7;
+            box-shadow: 0 4px 20px rgba(0, 120, 215, 0.5);
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .suggestions a {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #000;
+            gap: 10px;
+        }
+
+        .suggestions a img {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        .suggestions a:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <img src="https://mytab.knovon.net/knovontablogo.png" alt="KnovonTab Logo" class="logo" width="200">
+        <div class="search-bar">
+            <input id="searchInput" type="text" placeholder="Good Morning!" onfocus="updateGreeting()" oninput="updateSuggestions()" onkeydown="handleEnter(event)">
+            <div class="suggestions" id="suggestions"></div>
+        </div>
+    </div>
+
+    <script>
+        let sites = [];
+
+        // Fetch all suggested sites from the Google Sheet
+        async function fetchSuggestions() {
+            const response = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vT93cBbDNQmVKKzM8plXrz4jwFKfMwYU5HtU2q-FIJUGVuSIsEn3ricsv9IsmmHtt_taw8-s9-pE4Ge/pub?gid=0&single=true&output=csv");
+            const data = await response.text();
+            sites = data.split("\\n").slice(1).map(row => {
+                const [title, url, logo] = row.split(",");
+                return { title: title.trim(), url: url.trim(), logo: logo.trim() };
+            });
+            updateSuggestions(); // Display all suggestions initially
+        }
+
+        fetchSuggestions();
+
+        // Filter and display suggestions based on input
+        function updateSuggestions() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const suggestions = document.getElementById('suggestions');
+            suggestions.innerHTML = '';
+
+            const filteredSites = sites.filter(site => site.title.toLowerCase().includes(input));
+            filteredSites.forEach(site => {
+                const suggestion = document.createElement('a');
+                suggestion.href = site.url;
+                suggestion.target = "_blank"; // Open in a new tab
+                suggestion.innerHTML = `
+                    <img src="${site.logo || 'https://via.placeholder.com/24'}" alt="${site.title}">
+                    ${site.title}
+                `;
+                suggestions.appendChild(suggestion);
+            });
+
+            suggestions.style.display = filteredSites.length > 0 ? 'block' : 'none';
+        }
+
+        // Update greeting based on the time of day
+        function updateGreeting() {
+            const now = new Date();
+            const hours = now.getHours();
+            const searchInput = document.getElementById('searchInput');
+            let greeting = "Good Morning!";
+            if (hours >= 12 && hours < 18) {
+                greeting = "Good Afternoon!";
+            } else if (hours >= 18) {
+                greeting = "Good Evening!";
+            }
+            searchInput.placeholder = greeting;
+        }
+
+        // Handle search or redirection on Enter key press
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                const query = document.getElementById('searchInput').value.trim();
+
+                // Check if input matches a site title
+                const matchedSite = sites.find(site => site.title.toLowerCase() === query.toLowerCase());
+                if (matchedSite) {
+                    window.location.href = matchedSite.url;
+                    return;
+                }
+
+                // Check if input is a valid domain
+                const domainPattern = /^[a-z0-9.-]+\\.[a-z]{2,}$/i;
+                if (domainPattern.test(query)) {
+                    window.location.href = query.startsWith('http') ? query : `https://${query}`;
+                } else {
+                    // Perform Google search
+                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
