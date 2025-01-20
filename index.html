@@ -46,7 +46,7 @@
 
         .search-bar input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 15px 45px 15px 40px;
             font-size: 1.2rem;
             border: 2px solid #ccc;
             border-radius: 25px;
@@ -59,6 +59,15 @@
         .search-bar input:focus {
             border-color: #0078d7;
             box-shadow: 0 4px 20px rgba(0, 120, 215, 0.5);
+        }
+
+        .search-icon {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #888;
         }
 
         #status {
@@ -81,7 +90,7 @@
 
             .search-bar input {
                 font-size: 1rem;
-                padding: 10px 15px;
+                padding: 10px 45px 10px 40px;
             }
         }
     </style>
@@ -90,6 +99,7 @@
     <div class="search-container">
         <img src="https://mytab.knovon.net/knovontablogo.png" alt="KnovonTab Logo" class="logo" width="200">
         <div class="search-bar">
+            <span class="search-icon">🔍</span>
             <input id="searchInput" type="text" placeholder="Start typing...">
         </div>
     </div>
@@ -138,13 +148,11 @@
             const { text, image } = getRandomPrompt();
             document.body.style.backgroundImage = image;
 
-            if (document.activeElement !== searchInput) {
-                typeText(text, () => {
-                    deleteText(() => {
-                        cyclePrompts();
-                    });
+            typeText(text, () => {
+                deleteText(() => {
+                    cyclePrompts();
                 });
-            }
+            });
         }
 
         searchInput.addEventListener('keydown', (event) => {
@@ -155,14 +163,11 @@
                     return;
                 }
 
-                // Regex to detect valid domain
                 const domainPattern = /^[a-z0-9.-]+\.[a-z]{2,}$/i;
                 if (domainPattern.test(query)) {
-                    // Redirect to the domain
                     const url = query.startsWith('http') ? query : `https://${query}`;
                     window.location.href = url;
                 } else {
-                    // Perform a Google search
                     window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
                 }
             }
@@ -183,7 +188,10 @@
 
         // Initialize the page
         updateOnlineStatus();
-        cyclePrompts();
+        window.onload = () => {
+            searchInput.focus();
+            cyclePrompts();
+        };
     </script>
 </body>
 </html>
