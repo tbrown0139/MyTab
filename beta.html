@@ -15,19 +15,28 @@
             height: 100vh;
             background-size: cover;
             background-position: center;
-            transition: background-image 1s ease-in-out;
+            background-repeat: no-repeat;
+            transition: background-image 2s ease-in-out;
             color: #000000;
         }
 
         .logo {
             margin-top: 100px;
             margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .search-container {
             width: 100%;
             max-width: 600px;
             text-align: center;
+            position: relative;
+            z-index: 5;
         }
 
         .search-bar {
@@ -44,6 +53,7 @@
             outline: none;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: border-color 0.2s, box-shadow 0.2s;
+            background: rgba(255, 255, 255, 0.8);
         }
 
         .search-bar input:focus {
@@ -56,7 +66,7 @@
     <div class="search-container">
         <img src="https://mytab.knovon.net/knovontablogo.png" alt="KnovonTab Logo" class="logo" width="200">
         <div class="search-bar">
-            <input id="searchInput" type="text" placeholder="" readonly>
+            <input id="searchInput" type="text" placeholder="Start typing...">
         </div>
     </div>
 
@@ -74,12 +84,9 @@
 
         function typeText(text, callback) {
             let index = 0;
-            searchInput.value = "";
-
             const interval = setInterval(() => {
-                searchInput.value += text[index];
+                searchInput.placeholder = text.slice(0, index + 1);
                 index++;
-
                 if (index === text.length) {
                     clearInterval(interval);
                     setTimeout(callback, 2000); // Hold text for 2 seconds before deleting
@@ -89,9 +96,8 @@
 
         function deleteText(callback) {
             const interval = setInterval(() => {
-                searchInput.value = searchInput.value.slice(0, -1);
-
-                if (searchInput.value.length === 0) {
+                searchInput.placeholder = searchInput.placeholder.slice(0, -1);
+                if (searchInput.placeholder.length === 0) {
                     clearInterval(interval);
                     callback();
                 }
@@ -109,6 +115,19 @@
                 });
             });
         }
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const query = searchInput.value.trim();
+
+                const domainPattern = /^[a-z0-9.-]+\.[a-z]{2,}$/i;
+                if (domainPattern.test(query)) {
+                    window.location.href = query.startsWith('http') ? query : `https://${query}`;
+                } else {
+                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
 
         // Start cycling through prompts
         cyclePrompts();
